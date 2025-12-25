@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    allowedHosts: 'all',
+    allowedHosts: ['all', "krysten-flukey-uninventively.ngrok-free.dev"],
   },
 })
