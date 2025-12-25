@@ -73,20 +73,30 @@ const QRScanner = () => {
           qrbox: { width: 250, height: 250 }
         },
         async (decodedText) => {
-          // Stop scanner on successful scan
-          await html5QrCodeRef.current.stop();
+          // Debug log: show scanned text
+          console.log('Scanned QR code text:', decodedText);
+          // Stop scanner on successful scan, only if running
+          if (html5QrCodeRef.current && scanning) {
+            try {
+              await html5QrCodeRef.current.stop();
+            } catch (stopErr) {
+              console.warn('Scanner stop error (safe to ignore if already stopped):', stopErr);
+            }
+          }
           setScanning(false);
 
           try {
             const qrData = JSON.parse(decodedText);
-            
+            console.log('Parsed QR data:', qrData);
             if (!qrData.sessionId) {
+              console.error('QR data missing sessionId:', qrData);
               throw new Error('Invalid QR code');
             }
-
             setScanResult(qrData);
             setStep('form');
-          } catch {
+            console.log('Set scanResult and step to form');
+          } catch (err) {
+            console.error('Error parsing QR code:', err);
             setError('Invalid QR code format. Please scan a valid attendance QR.');
             setStep('error');
           }
