@@ -15,10 +15,17 @@ We recommend **Render** or **Railway** for free/easy Node.js hosting.
 6.  **Start Command**: `npm start`
 7.  **Environment Variables**:
     - `NODE_ENV`: `production`
+    - `CLIENT_URL`: (Your deployed frontend URL, e.g., `https://your-app.vercel.app`)
     - `GOOGLE_SERVICE_ACCOUNT_EMAIL`: (Your Google IAM email)
     - `GOOGLE_PRIVATE_KEY`: (Your Google private key. **Note:** If copying from a `.env` file, ensure newlines are preserved. On Render, you can paste the whole key including `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----`.)
     - `GOOGLE_SPREADSHEET_ID`: (ID from your Google Sheet URL)
     - `PORT`: `5000` (Render usually sets this automatically, but good to ensure)
+
+> [!TIP]
+> **Chicken & Egg Problem**: Since you haven't deployed the frontend yet, you don't have the `CLIENT_URL`.
+> 1. Initially set `CLIENT_URL` to a placeholder (e.g., `http://localhost`).
+> 2. Deploy the Frontend (Step 2) to get your Vercel URL.
+> 3. Come back to Render **Environment Variables** and update `CLIENT_URL` to the real Vercel URL.
 
 > [!NOTE]
 > If you do not provide Google Sheets credentials, the server will switch to **Memory Mode**. All data will be lost when the server restarts (which happens frequently on free tiers).

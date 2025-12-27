@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 const allowedOrigins = [
   'http://localhost:5173',
+  process.env.CLIENT_URL, // Add deployed client URL from env
   'https://krysten-flukey-uninventively.ngrok-free.dev',
   'http://192.168.29.28:5173',
 ];
