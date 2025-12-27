@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import QRCode from 'react-qr-code';
-import { getSession, closeSession, getAttendance } from '../../services/api';
+import { getSession, closeSession, getAttendance, getExportURL } from '../../services/api';
 import { formatDateTime, generateSessionLink, copyToClipboard } from '../../utils/helpers';
 import Loading from '../common/Loading';
 import './Faculty.css';
@@ -10,7 +10,7 @@ const QRCodeDisplay = () => {
   const { sessionId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const [session, setSession] = useState(location.state?.session || null);
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(!location.state?.session);
@@ -22,7 +22,7 @@ const QRCodeDisplay = () => {
       fetchSession();
     }
     fetchAttendance();
-    
+
     // Poll for attendance updates every 10 seconds
     const interval = setInterval(fetchAttendance, 10000);
     return () => clearInterval(interval);
@@ -53,7 +53,7 @@ const QRCodeDisplay = () => {
     if (!window.confirm('Are you sure you want to close this session? Students will no longer be able to mark attendance.')) {
       return;
     }
-    
+
     try {
       await closeSession(sessionId);
       setSession(prev => ({ ...prev, status: 'closed' }));
@@ -111,7 +111,7 @@ const QRCodeDisplay = () => {
         {/* QR Code Card */}
         <div className="qr-card card">
           <h3>Scan to Mark Attendance</h3>
-          
+
           <div className="qr-wrapper">
             {session.status === 'active' ? (
               <div className="qr-container">
@@ -132,16 +132,16 @@ const QRCodeDisplay = () => {
           </div>
 
           <div className="qr-actions">
-            <button 
-              className="btn-secondary" 
+            <button
+              className="btn-secondary"
               onClick={handleCopyLink}
             >
               {copied ? '✓ Copied!' : '🔗 Copy Link'}
             </button>
-            
+
             {session.status === 'active' && (
-              <button 
-                className="btn-danger" 
+              <button
+                className="btn-danger"
                 onClick={handleCloseSession}
               >
                 Close Session
@@ -195,8 +195,8 @@ const QRCodeDisplay = () => {
           )}
 
           {attendance.length > 0 && (
-            <a 
-              href={`http://localhost:5000/api/export-attendance/${sessionId}`}
+            <a
+              href={getExportURL(sessionId)}
               className="btn-secondary btn-full mt-2"
               download
             >

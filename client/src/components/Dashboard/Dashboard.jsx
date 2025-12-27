@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllSessions, getAttendance } from '../../services/api';
+import { getAllSessions, getAttendance, getExportURL } from '../../services/api';
 import { formatDateTime, formatDate } from '../../utils/helpers';
 import Loading from '../common/Loading';
 import './Dashboard.css';
@@ -32,7 +32,7 @@ const Dashboard = () => {
   const handleSessionClick = async (session) => {
     setSelectedSession(session);
     setAttendanceLoading(true);
-    
+
     try {
       const response = await getAttendance(session.sessionId);
       setAttendance(response.data.attendance || []);
@@ -104,12 +104,12 @@ const Dashboard = () => {
       {/* Sessions List */}
       <div className="sessions-section">
         <h2>All Sessions</h2>
-        
+
         {sessions.length > 0 ? (
           <div className="sessions-list">
             {sessions.map((session) => (
-              <div 
-                key={session.sessionId} 
+              <div
+                key={session.sessionId}
                 className={`session-item ${selectedSession?.sessionId === session.sessionId ? 'selected' : ''}`}
                 onClick={() => handleSessionClick(session)}
               >
@@ -143,7 +143,7 @@ const Dashboard = () => {
         <div className="session-details-overlay" onClick={closeDetails}>
           <div className="session-details-panel" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={closeDetails}>✕</button>
-            
+
             <div className="details-header">
               <h2>{selectedSession.subject}</h2>
               <span className={`badge ${selectedSession.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
@@ -158,14 +158,14 @@ const Dashboard = () => {
             </div>
 
             <div className="details-actions">
-              <Link 
-                to={`/faculty/session/${selectedSession.sessionId}`} 
+              <Link
+                to={`/faculty/session/${selectedSession.sessionId}`}
                 className="btn-secondary"
               >
                 View QR Code
               </Link>
-              <a 
-                href={`http://localhost:5000/api/export-attendance/${selectedSession.sessionId}`}
+              <a
+                href={getExportURL(selectedSession.sessionId)}
                 className="btn-secondary"
                 download
               >
@@ -175,7 +175,7 @@ const Dashboard = () => {
 
             <div className="details-attendance">
               <h3>Attendance ({attendance.length})</h3>
-              
+
               {attendanceLoading ? (
                 <Loading size="sm" message="Loading..." />
               ) : attendance.length > 0 ? (
