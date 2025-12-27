@@ -19,14 +19,19 @@ const allowedOrigins = [
   process.env.CLIENT_URL, // Add deployed client URL from env
   'https://krysten-flukey-uninventively.ngrok-free.dev',
   'http://192.168.29.28:5173',
-];
+].filter(Boolean).map(url => url.replace(/\/$/, '')); // Remove trailing slashes
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    
+    // Check exact match or match without trailing slash
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
       return callback(null, true);
     }
+    
+    console.log('Blocked by CORS:', origin); // Log blocked origin for debugging
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true
