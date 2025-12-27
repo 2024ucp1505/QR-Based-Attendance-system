@@ -14,9 +14,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// Middleware
 const allowedOrigins = [
   'http://localhost:5173',
-  process.env.CLIENT_URL, // Add deployed client URL from env
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(url => url.trim()) : []), // Support multiple comma-separated URLs
   'https://krysten-flukey-uninventively.ngrok-free.dev',
   'http://192.168.29.28:5173',
 ].filter(Boolean).map(url => url.replace(/\/$/, '')); // Remove trailing slashes
