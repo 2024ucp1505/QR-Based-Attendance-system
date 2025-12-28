@@ -4,7 +4,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import useGeolocation from '../../hooks/useGeolocation';
 import { markAttendance, getSession } from '../../services/api';
 import Loading from '../common/Loading';
-import './Student.css';
+import { formatDateTime, getDeviceId } from '../../utils/helpers';
 
 const QRScanner = () => {
   const navigate = useNavigate();
@@ -144,7 +144,8 @@ const QRScanner = () => {
         studentId: formData.studentId,
         studentName: formData.studentName,
         latitude: studentLocation.latitude,
-        longitude: studentLocation.longitude
+        longitude: studentLocation.longitude,
+        deviceId: getDeviceId()
       });
 
       setStep('success');

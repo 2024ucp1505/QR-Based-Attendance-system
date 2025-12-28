@@ -1,38 +1,39 @@
-/**
- * Authentication Middleware Placeholder
- * This will be implemented in Phase 2 with JWT authentication
- * 
- * Phase 2 will add:
- * - JWT token verification
- * - Role-based access control (Admin, Faculty, Student)
- * - OTP verification for students
- */
+import jwt from 'jsonwebtoken';
 
-// Placeholder middleware - passes through all requests in Phase 1
+/**
+ * Validates JWT token and attaches user to request
+ */
 export const authenticate = (req, res, next) => {
-  // Phase 2: Implement JWT verification here
-  // For now, just pass through
-  next();
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Access denied. No token provided.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(
+      token, 
+      process.env.JWT_SECRET || 'fallback-secret-key-123'
+    );
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid or expired token' });
+  }
 };
 
-// Placeholder for role-based access
-export const authorize = (...roles) => {
+/**
+ * Restricts access to specific roles
+ */
+export const authorize = (roles = []) => {
+  if (typeof roles === 'string') roles = [roles];
+
   return (req, res, next) => {
-    // Phase 2: Check user role against allowed roles
-    // For now, just pass through
+    if (!req.user || (roles.length && !roles.includes(req.user.role))) {
+      return res.status(403).json({ error: 'Access denied. Unauthorized role.' });
+    }
     next();
   };
 };
-
-// Placeholder for faculty-only routes
-export const facultyOnly = (req, res, next) => {
-  // Phase 2: Verify user is faculty
-  next();
-};
-
-// Placeholder for student-only routes  
-export const studentOnly = (req, res, next) => {
-  // Phase 2: Verify user is student
-  next();
-};
-

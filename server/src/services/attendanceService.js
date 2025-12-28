@@ -11,7 +11,7 @@ class AttendanceService {
   /**
    * Mark attendance for a student
    */
-  async markAttendance({ sessionId, studentId, studentName, latitude, longitude }) {
+  async markAttendance({ sessionId, studentId, studentName, latitude, longitude, studentEmail, deviceId }) {
     // 1. Verify session exists and is active
     const session = await sessionService.getSession(sessionId);
     
@@ -23,11 +23,11 @@ class AttendanceService {
       throw new Error('Session is no longer active');
     }
 
-    // 2. Check for duplicate attendance
-    const isDuplicate = await storage.checkDuplicateAttendance(sessionId, studentId);
+    // 2. Check for duplicate attendance (By Student ID OR Device ID)
+    const isDuplicate = await storage.checkDuplicateAttendance(sessionId, studentId, deviceId);
     
     if (isDuplicate) {
-      throw new Error('Attendance already marked for this session');
+      throw new Error('Attendance already marked for this session from this student or device');
     }
 
     // 3. Validate location
@@ -59,7 +59,9 @@ class AttendanceService {
       markedAt,
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
-      distance: locationResult.distance
+      distance: locationResult.distance,
+      studentEmail,
+      deviceId
     };
 
     // 5. Store attendance
@@ -101,10 +103,9 @@ class AttendanceService {
   /**
    * Check if student already marked attendance
    */
-  async checkDuplicate(sessionId, studentId) {
-    return await storage.checkDuplicateAttendance(sessionId, studentId);
+  async checkDuplicate(sessionId, studentId, deviceId) {
+    return await storage.checkDuplicateAttendance(sessionId, studentId, deviceId);
   }
 }
 
 export default new AttendanceService();
-

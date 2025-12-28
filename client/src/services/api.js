@@ -10,14 +10,65 @@ const api = axios.create({
   },
 });
 
+// Request interceptor for token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.error || error.message || 'Something went wrong';
+    if (error.response?.status === 401) {
+      // Clear token on unauthorized
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Redirect to login if not already there
+      if (!window.location.pathname.includes('login')) {
+        window.location.href = '/login';
+      }
+    }
+    const message = error.response?.data?.error || error.response?.data?.message || 'Something went wrong';
     return Promise.reject(new Error(message));
   }
 );
+
+// ==================== AUTH APIs ====================
+
+/**
+ * Send OTP to email
+ */
+export const sendOTP = async (email, role) => {
+  const response = await api.post('/auth/send-otp', { email, role });
+  return response.data;
+};
+
+/**
+ * Verify OTP
+ */
+export const verifyOTP = async (email, otp) => {
+  const response = await api.post('/auth/verify-otp', { email, otp });
+  if (response.data.token) {
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify({
+      email: response.data.email,
+      role: response.data.role
+    }));
+  }
+  return response.data;
+};
+
+/**
+ * Logout
+ */
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
 
 // ==================== SESSION APIs ====================
 

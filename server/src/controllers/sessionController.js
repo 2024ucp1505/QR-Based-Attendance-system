@@ -27,7 +27,8 @@ export const createSession = asyncHandler(async (req, res) => {
     subject,
     latitude,
     longitude,
-    radius
+    radius,
+    facultyEmail: req.user.email
   });
 
   res.status(201).json({
@@ -68,7 +69,12 @@ export const getSession = asyncHandler(async (req, res) => {
  * GET /api/sessions
  */
 export const getAllSessions = asyncHandler(async (req, res) => {
-  const sessions = await sessionService.getAllSessions();
+  let sessions = await sessionService.getAllSessions();
+
+  // If user is a teacher, only show their sessions
+  if (req.user && req.user.role === 'teacher') {
+    sessions = sessions.filter(s => s.facultyEmail === req.user.email);
+  }
 
   res.json({
     success: true,
@@ -84,16 +90,23 @@ export const getAllSessions = asyncHandler(async (req, res) => {
 export const closeSession = asyncHandler(async (req, res) => {
   const { sessionId } = req.params;
 
-  const session = await sessionService.closeSession(sessionId);
+  const session = await sessionService.getSession(sessionId);
 
   if (!session) {
     throw new AppError('Session not found', 404);
   }
 
+  // Check ownership
+  if (session.facultyEmail !== req.user.email) {
+    throw new AppError('You do not have permission to close this session', 403);
+  }
+
+  const updatedSession = await sessionService.closeSession(sessionId);
+
   res.json({
     success: true,
     message: 'Session closed successfully',
-    data: session
+    data: updatedSession
   });
 });
 

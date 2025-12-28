@@ -26,25 +26,25 @@ const Home = () => {
         <div className="hero-content animate-fade-in">
           <div className="hero-badge">
             <span className="badge-dot"></span>
-            Phase 1 • Development
+            Phase 1.5 • Authentication
           </div>
-          
+
           <h1 className="hero-title">
             QR-Based
             <span className="gradient-text"> Attendance</span>
             <br />System
           </h1>
-          
+
           <p className="hero-description">
-            A modern, location-aware attendance system. Faculty generate QR codes, 
-            students scan to mark attendance with GPS validation.
+            A modern, location-aware attendance system with OTP verification.
+            Faculty manage sessions, students mark attendance with institutional email validation.
           </p>
 
           <div className="hero-actions">
-            <Link to="/faculty" className="btn-primary btn-large">
+            <Link to="/login?role=teacher" className="btn-primary btn-large">
               <span>◇</span> I'm Faculty
             </Link>
-            <Link to="/student" className="btn-secondary btn-large">
+            <Link to="/login?role=student" className="btn-secondary btn-large">
               <span>○</span> I'm Student
             </Link>
           </div>
@@ -85,31 +85,31 @@ const Home = () => {
 
       {/* Features Section */}
       <section className="features">
-        <h2>How It Works</h2>
-        
+        <h2>Security & Reliability</h2>
+
         <div className="features-grid">
           <div className="feature-card">
+            <div className="feature-icon">OTP</div>
+            <h3>OTP Verification</h3>
+            <p>Secure login for both faculty and students using email-based one-time passwords</p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">📱</div>
+            <h3>Device Fingerprinting</h3>
+            <p>Prevents proxy attendance by locking scans to a single physical device per student</p>
+          </div>
+
+          <div className="feature-card">
             <div className="feature-icon">📍</div>
-            <h3>Location Verified</h3>
-            <p>Students must be physically present within the specified radius to mark attendance</p>
+            <h3>GPS Validation</h3>
+            <p>Ensures students are physically present within the class radius</p>
           </div>
-          
+
           <div className="feature-card">
-            <div className="feature-icon">⚡</div>
-            <h3>Instant QR Codes</h3>
-            <p>Faculty generate unique QR codes for each session in seconds</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">🔒</div>
-            <h3>Duplicate Prevention</h3>
-            <p>System prevents multiple attendance entries from the same student</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Export Reports</h3>
-            <p>Download attendance records as CSV for easy record keeping</p>
+            <div className="feature-icon">Edu</div>
+            <h3>MNIT Email Locked</h3>
+            <p>Strict institutional email requirement for students to ensure identity</p>
           </div>
         </div>
       </section>
@@ -121,19 +121,19 @@ const Home = () => {
             <span className="access-icon">◇</span>
             <h3>For Faculty</h3>
             <p>Create sessions, generate QR codes, and manage attendance records</p>
-            <Link to="/faculty" className="btn-secondary">
-              Go to Faculty Panel →
+            <Link to="/login?role=teacher" className="btn-secondary">
+              Faculty Login →
             </Link>
           </div>
         </div>
-        
+
         <div className="access-card student">
           <div className="access-content">
             <span className="access-icon">○</span>
             <h3>For Students</h3>
             <p>Scan QR codes and mark your attendance with location verification</p>
-            <Link to="/student" className="btn-secondary">
-              Scan QR Code →
+            <Link to="/login?role=student" className="btn-secondary">
+              Student Login →
             </Link>
           </div>
         </div>
@@ -141,12 +141,11 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="home-footer">
-        <p>Phase 1 • QR Attendance System</p>
-        <p className="footer-note">Phase 2 coming soon: Authentication, Roles, MongoDB</p>
+        <p>Phase 1.5 • QR Attendance System</p>
+        <p className="footer-note">Built for MNIT • Secure Attendance Solution</p>
       </footer>
     </div>
   );
 };
 
 export default Home;
-

@@ -6,6 +6,7 @@ import cors from 'cors';
 import sessionRoutes from './routes/sessionRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import exportRoutes from './routes/exportRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -52,6 +53,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api', sessionRoutes);
 app.use('/api', attendanceRoutes);
 app.use('/api', exportRoutes);
+app.use('/api', authRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

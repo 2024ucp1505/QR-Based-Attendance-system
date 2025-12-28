@@ -1,15 +1,35 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { logout } from '../../services/api';
 import './Header.css';
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
 
-  const navItems = [
-    { path: '/', label: 'Home', icon: '◈' },
-    { path: '/faculty', label: 'Faculty', icon: '◇' },
-    { path: '/student', label: 'Student', icon: '○' },
-    { path: '/dashboard', label: 'Dashboard', icon: '▣' },
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const teacherNav = [
+    { path: '/faculty', label: 'Create Session', icon: '◈' },
+    { path: '/dashboard', label: 'My Sessions', icon: '▣' },
   ];
+
+  const studentNav = [
+    { path: '/student', label: 'Mark Attendance', icon: '○' },
+  ];
+
+  const publicNav = [
+    { path: '/', label: 'Home', icon: '◈' },
+  ];
+
+  const getNavItems = () => {
+    if (!user) return publicNav;
+    return user.role === 'teacher' ? teacherNav : studentNav;
+  };
 
   return (
     <header className="header">
@@ -20,7 +40,7 @@ const Header = () => {
         </Link>
 
         <nav className="nav">
-          {navItems.map(({ path, label, icon }) => (
+          {getNavItems().map(({ path, label, icon }) => (
             <Link
               key={path}
               to={path}
@@ -32,8 +52,15 @@ const Header = () => {
           ))}
         </nav>
 
-        <div className="header-badge">
-          <span>Phase 1</span>
+        <div className="header-actions">
+          {user ? (
+            <div className="user-info">
+              <span className="user-email">{user.email.split('@')[0]}</span>
+              <button onClick={handleLogout} className="btn-logout">Logout</button>
+            </div>
+          ) : (
+            <Link to="/login" className="btn-login">Login</Link>
+          )}
         </div>
       </div>
     </header>
@@ -41,4 +68,3 @@ const Header = () => {
 };
 
 export default Header;
-

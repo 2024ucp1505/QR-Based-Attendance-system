@@ -115,3 +115,15 @@ export const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return Math.round(R * c); // Distance in meters
 };
 
+/**
+ * Get or generate a unique device ID
+ */
+export const getDeviceId = () => {
+  let deviceId = localStorage.getItem('qr_attendance_device_id');
+  if (!deviceId) {
+    deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('qr_attendance_device_id', deviceId);
+  }
+  return deviceId;
+};
+

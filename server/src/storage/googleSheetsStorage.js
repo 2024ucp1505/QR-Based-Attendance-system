@@ -67,13 +67,14 @@ class GoogleSheetsStorage {
       sessionData.longitude,
       sessionData.radius,
       sessionData.createdAt,
-      sessionData.status || 'active'
+      sessionData.status || 'active',
+      sessionData.facultyEmail
     ];
 
     if (this.sheets && this.isConfigured()) {
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'Sessions!A:H',
+        range: 'Sessions!A:I',
         valueInputOption: 'RAW',
         resource: { values: [row] }
       });
@@ -96,7 +97,7 @@ class GoogleSheetsStorage {
     if (this.sheets && this.isConfigured()) {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Sessions!A:H',
+        range: 'Sessions!A:I',
       });
 
       const rows = response.data.values || [];
@@ -112,7 +113,8 @@ class GoogleSheetsStorage {
         longitude: parseFloat(sessionRow[4]),
         radius: parseInt(sessionRow[5]),
         createdAt: sessionRow[6],
-        status: sessionRow[7]
+        status: sessionRow[7],
+        facultyEmail: sessionRow[8]
       };
     } else {
       // Development mode - get from memory
@@ -129,7 +131,7 @@ class GoogleSheetsStorage {
     if (this.sheets && this.isConfigured()) {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Sessions!A:H',
+        range: 'Sessions!A:I',
       });
 
       const rows = response.data.values || [];
@@ -144,7 +146,8 @@ class GoogleSheetsStorage {
         longitude: parseFloat(row[4]),
         radius: parseInt(row[5]),
         createdAt: row[6],
-        status: row[7]
+        status: row[7],
+        facultyEmail: row[8]
       }));
     } else {
       return this.mockSessions || [];
@@ -205,13 +208,15 @@ class GoogleSheetsStorage {
       attendanceData.markedAt,
       attendanceData.latitude,
       attendanceData.longitude,
-      attendanceData.distance
+      attendanceData.distance,
+      attendanceData.studentEmail,
+      attendanceData.deviceId
     ];
 
     if (this.sheets && this.isConfigured()) {
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'Attendance!A:H',
+        range: 'Attendance!A:J',
         valueInputOption: 'RAW',
         resource: { values: [row] }
       });
@@ -234,7 +239,7 @@ class GoogleSheetsStorage {
     if (this.sheets && this.isConfigured()) {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Attendance!A:H',
+        range: 'Attendance!A:J',
       });
 
       const rows = response.data.values || [];
@@ -250,7 +255,9 @@ class GoogleSheetsStorage {
           markedAt: row[4],
           latitude: parseFloat(row[5]),
           longitude: parseFloat(row[6]),
-          distance: parseInt(row[7])
+          distance: parseInt(row[7]),
+          studentEmail: row[8],
+          deviceId: row[9]
         }));
     } else {
       return this.mockAttendance?.filter(a => a.sessionId === sessionId) || [];
@@ -260,15 +267,15 @@ class GoogleSheetsStorage {
   /**
    * Check if student already marked attendance for session
    */
-  async checkDuplicateAttendance(sessionId, studentId) {
+  async checkDuplicateAttendance(sessionId, studentId, deviceId) {
     await this.init();
 
     if (this.sheets && this.isConfigured()) {
       const attendance = await this.getAttendanceBySession(sessionId);
-      return attendance.some(a => a.studentId === studentId);
+      return attendance.some(a => a.studentId === studentId || a.deviceId === deviceId);
     } else {
       return this.mockAttendance?.some(
-        a => a.sessionId === sessionId && a.studentId === studentId
+        a => a.sessionId === sessionId && (a.studentId === studentId || a.deviceId === deviceId)
       ) || false;
     }
   }
@@ -282,7 +289,7 @@ class GoogleSheetsStorage {
     if (this.sheets && this.isConfigured()) {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Attendance!A:H',
+        range: 'Attendance!A:J',
       });
 
       const rows = response.data.values || [];
@@ -298,7 +305,9 @@ class GoogleSheetsStorage {
         markedAt: record[4],
         latitude: parseFloat(record[5]),
         longitude: parseFloat(record[6]),
-        distance: parseInt(record[7])
+        distance: parseInt(record[7]),
+        studentEmail: record[8],
+        deviceId: record[9]
       };
     } else {
       return this.mockAttendance?.find(a => a.recordId === recordId) || null;
