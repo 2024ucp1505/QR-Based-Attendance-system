@@ -20,10 +20,9 @@ const QRScanner = () => {
     studentName: ''
   });
 
-  const { location, loading: geoLoading, error: geoError, getPrecisePosition } = useGeolocation();
+  const { location, loading: geoLoading, getCurrentPosition } = useGeolocation();
   const scannerRef = useRef(null);
   const html5QrCodeRef = useRef(null);
-  const [distanceInfo, setDistanceInfo] = useState(null);
 
   // If sessionId is in URL, fetch session details
   useEffect(() => {
@@ -128,16 +127,12 @@ const QRScanner = () => {
 
     // Get location if not already obtained
     let studentLocation = location;
-    if (!studentLocation || studentLocation.accuracy > 30) {
+    if (!studentLocation) {
       try {
-        // Wait for a reading with at least 30m accuracy, or timeout after 5s
-        studentLocation = await getPrecisePosition(30, 5000);
+        studentLocation = await getCurrentPosition();
       } catch (err) {
-        if (!studentLocation) {
-          setError('Location is required. Please enable location access.');
-          return;
-        }
-        // If we have some location but it's not accurate enough, we'll try with it anyway
+        setError('Location is required. Please enable location access.');
+        return;
       }
     }
 
@@ -216,21 +211,18 @@ const QRScanner = () => {
             <div className="location-status-box">
               {geoLoading ? (
                 <div className="status-loading">
-                  <span className="status-icon animate-spin">⟳</span>
-                  <span>Optimizing GPS precision...</span>
+                  <span className="status-icon">⟳</span>
+                  <span>Getting your location...</span>
                 </div>
               ) : location ? (
                 <div className="status-success">
                   <span className="status-icon">✓</span>
-                  <div>
-                    <span>Location ready</span>
-                    <p className="accuracy-text">Accuracy: ±{Math.round(location.accuracy)}m</p>
-                  </div>
+                  <span>Location captured</span>
                 </div>
               ) : (
                 <div className="status-pending">
                   <span className="status-icon">◎</span>
-                  <span>Waiting for GPS signal...</span>
+                  <span>Location will be captured on submit</span>
                 </div>
               )}
             </div>
@@ -329,4 +321,3 @@ const QRScanner = () => {
 };
 
 export default QRScanner;
-

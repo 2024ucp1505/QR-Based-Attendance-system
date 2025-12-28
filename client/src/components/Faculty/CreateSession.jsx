@@ -8,7 +8,7 @@ import './Faculty.css';
 
 const CreateSession = () => {
   const navigate = useNavigate();
-  const { location, loading: geoLoading, error: geoError, getPrecisePosition } = useGeolocation();
+  const { location, loading: geoLoading, error: geoError, getCurrentPosition } = useGeolocation();
 
   const [formData, setFormData] = useState({
     facultyName: '',
@@ -25,8 +25,7 @@ const CreateSession = () => {
 
   const handleGetLocation = async () => {
     try {
-      // Wait for at least 20m accuracy for faculty, up to 10 seconds
-      await getPrecisePosition(20, 10000);
+      await getCurrentPosition();
     } catch (err) {
       console.error('Location error:', err);
     }
@@ -86,7 +85,7 @@ const CreateSession = () => {
               <div className="location-success-box">
                 <span className="success-icon">✓</span>
                 <div>
-                  <p className="location-status">Location captured (Accuracy: ±{Math.round(location.accuracy)}m)</p>
+                  <p className="location-status">Location captured</p>
                   <p className="location-value">{formatCoordinates(location.latitude, location.longitude)}</p>
                 </div>
                 <button type="button" className="btn-secondary" onClick={handleGetLocation}>
@@ -169,4 +168,3 @@ const CreateSession = () => {
 };
 
 export default CreateSession;
-

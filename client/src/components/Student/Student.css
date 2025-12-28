@@ -89,13 +89,6 @@
   color: var(--text-muted);
 }
 
-.accuracy-text {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin: 0;
-  line-height: 1.2;
-}
-
 /* Error Message */
 .error-message {
   display: flex;
