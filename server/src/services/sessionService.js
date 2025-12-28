@@ -10,7 +10,7 @@ class SessionService {
   /**
    * Create a new attendance session
    */
-  async createSession({ facultyName, subject, latitude, longitude, radius }) {
+  async createSession({ facultyName, subject, latitude, longitude, radius, facultyEmail }) {
     const sessionId = uuidv4();
     const createdAt = new Date().toISOString();
     const defaultRadius = parseInt(process.env.DEFAULT_RADIUS_METERS) || 50;
@@ -23,7 +23,8 @@ class SessionService {
       longitude: parseFloat(longitude),
       radius: parseInt(radius) || defaultRadius,
       createdAt,
-      status: 'active'
+      status: 'active',
+      facultyEmail
     };
 
     // Store session in database

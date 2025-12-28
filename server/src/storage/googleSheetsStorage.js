@@ -164,7 +164,7 @@ class GoogleSheetsStorage {
       // Get current data to find row index
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Sessions!A:H',
+        range: 'Sessions!A:I',
       });
 
       const rows = response.data.values || [];
