@@ -8,8 +8,8 @@ import './Faculty.css';
 
 const CreateSession = () => {
   const navigate = useNavigate();
-  const { location, loading: geoLoading, error: geoError, getCurrentPosition } = useGeolocation();
-  
+  const { location, loading: geoLoading, error: geoError, getPrecisePosition } = useGeolocation();
+
   const [formData, setFormData] = useState({
     facultyName: '',
     subject: '',
@@ -25,7 +25,8 @@ const CreateSession = () => {
 
   const handleGetLocation = async () => {
     try {
-      await getCurrentPosition();
+      // Wait for at least 20m accuracy for faculty, up to 10 seconds
+      await getPrecisePosition(20, 10000);
     } catch (err) {
       console.error('Location error:', err);
     }
@@ -55,7 +56,7 @@ const CreateSession = () => {
       });
 
       // Navigate to QR display page with session data
-      navigate(`/faculty/session/${response.data.sessionId}`, { 
+      navigate(`/faculty/session/${response.data.sessionId}`, {
         state: { session: response.data }
       });
     } catch (err) {
@@ -77,7 +78,7 @@ const CreateSession = () => {
         <div className="form-section">
           <h3>📍 Session Location</h3>
           <p className="section-desc">Your current location will be used to validate student attendance</p>
-          
+
           <div className="location-box">
             {geoLoading ? (
               <Loading size="sm" message="Getting location..." />
@@ -85,7 +86,7 @@ const CreateSession = () => {
               <div className="location-success-box">
                 <span className="success-icon">✓</span>
                 <div>
-                  <p className="location-status">Location captured</p>
+                  <p className="location-status">Location captured (Accuracy: ±{Math.round(location.accuracy)}m)</p>
                   <p className="location-value">{formatCoordinates(location.latitude, location.longitude)}</p>
                 </div>
                 <button type="button" className="btn-secondary" onClick={handleGetLocation}>
@@ -106,7 +107,7 @@ const CreateSession = () => {
         {/* Session Details */}
         <div className="form-section">
           <h3>📝 Session Details</h3>
-          
+
           <div className="form-group">
             <label htmlFor="facultyName">Faculty Name *</label>
             <input
@@ -155,8 +156,8 @@ const CreateSession = () => {
           </div>
         )}
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="btn-primary btn-full"
           disabled={loading || !location}
         >

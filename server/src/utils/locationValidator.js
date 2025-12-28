@@ -1,16 +1,25 @@
-import { getDistance } from 'geolib';
+import { getPreciseDistance, isValidCoordinate as checkCoords } from 'geolib';
 
 /**
  * Validates if a student's location is within the allowed radius of the session location
- * Uses Haversine formula via geolib for accurate distance calculation
+ * Uses Vincenty formula via geolib for highly accurate distance calculation
  * 
  * @param {Object} sessionLocation - { latitude, longitude, radius }
  * @param {Object} studentLocation - { latitude, longitude }
  * @returns {Object} - { isValid, distance, message }
  */
 export const validateLocation = (sessionLocation, studentLocation) => {
-  // Calculate distance in meters between two points
-  const distance = getDistance(
+  // Validate that we have valid coordinates
+  if (!checkCoords(sessionLocation) || !checkCoords(studentLocation)) {
+    return {
+      isValid: false,
+      distance: null,
+      message: 'Invalid location data received. Please ensure GPS is enabled.'
+    };
+  }
+
+  // Calculate distance in meters between two points using Vincenty's formula
+  const distance = getPreciseDistance(
     { latitude: sessionLocation.latitude, longitude: sessionLocation.longitude },
     { latitude: studentLocation.latitude, longitude: studentLocation.longitude }
   );

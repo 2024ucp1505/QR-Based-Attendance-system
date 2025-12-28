@@ -9,20 +9,21 @@ import './Student.css';
 const QRScanner = () => {
   const navigate = useNavigate();
   const { sessionId: urlSessionId } = useParams();
-  
+
   const [step, setStep] = useState(urlSessionId ? 'form' : 'scan'); // 'scan', 'form', 'submitting', 'success', 'error'
   const [scanResult, setScanResult] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     studentId: '',
     studentName: ''
   });
-  
-  const { location, loading: geoLoading, getCurrentPosition } = useGeolocation();
+
+  const { location, loading: geoLoading, error: geoError, getPrecisePosition } = useGeolocation();
   const scannerRef = useRef(null);
   const html5QrCodeRef = useRef(null);
+  const [distanceInfo, setDistanceInfo] = useState(null);
 
   // If sessionId is in URL, fetch session details
   useEffect(() => {
@@ -101,7 +102,7 @@ const QRScanner = () => {
             setStep('error');
           }
         },
-        () => {} // Ignore errors during scanning
+        () => { } // Ignore errors during scanning
       );
     } catch (err) {
       setScanning(false);
@@ -127,12 +128,16 @@ const QRScanner = () => {
 
     // Get location if not already obtained
     let studentLocation = location;
-    if (!studentLocation) {
+    if (!studentLocation || studentLocation.accuracy > 30) {
       try {
-        studentLocation = await getCurrentPosition();
+        // Wait for a reading with at least 30m accuracy, or timeout after 5s
+        studentLocation = await getPrecisePosition(30, 5000);
       } catch (err) {
-        setError('Location is required. Please enable location access.');
-        return;
+        if (!studentLocation) {
+          setError('Location is required. Please enable location access.');
+          return;
+        }
+        // If we have some location but it's not accurate enough, we'll try with it anyway
       }
     }
 
@@ -173,9 +178,9 @@ const QRScanner = () => {
           </div>
 
           <div className="scanner-card card">
-            <div 
-              id="qr-reader" 
-              ref={scannerRef} 
+            <div
+              id="qr-reader"
+              ref={scannerRef}
               className="qr-reader"
             ></div>
 
@@ -211,18 +216,21 @@ const QRScanner = () => {
             <div className="location-status-box">
               {geoLoading ? (
                 <div className="status-loading">
-                  <span className="status-icon">⟳</span>
-                  <span>Getting your location...</span>
+                  <span className="status-icon animate-spin">⟳</span>
+                  <span>Optimizing GPS precision...</span>
                 </div>
               ) : location ? (
                 <div className="status-success">
                   <span className="status-icon">✓</span>
-                  <span>Location captured</span>
+                  <div>
+                    <span>Location ready</span>
+                    <p className="accuracy-text">Accuracy: ±{Math.round(location.accuracy)}m</p>
+                  </div>
                 </div>
               ) : (
                 <div className="status-pending">
                   <span className="status-icon">◎</span>
-                  <span>Location will be captured on submit</span>
+                  <span>Waiting for GPS signal...</span>
                 </div>
               )}
             </div>
@@ -262,8 +270,8 @@ const QRScanner = () => {
             </button>
 
             {!urlSessionId && (
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn-secondary btn-full mt-2"
                 onClick={resetScanner}
               >
@@ -288,7 +296,7 @@ const QRScanner = () => {
             <div className="success-icon-large">✓</div>
             <h2>Attendance Marked!</h2>
             <p>Your attendance has been successfully recorded.</p>
-            
+
             <div className="success-details">
               <p><strong>Subject:</strong> {scanResult?.subject}</p>
               <p><strong>Student:</strong> {formData.studentName}</p>
@@ -309,7 +317,7 @@ const QRScanner = () => {
             <div className="error-icon-large">✕</div>
             <h2>Unable to Mark Attendance</h2>
             <p className="error-text">{error}</p>
-            
+
             <button className="btn-primary" onClick={resetScanner}>
               Try Again
             </button>

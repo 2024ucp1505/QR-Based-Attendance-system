@@ -119,11 +119,71 @@ export const useGeolocation = (options = {}) => {
     setLoading(false);
   }, []);
 
+  /**
+   * Get position with higher precision by waiting for a good reading
+   */
+  const getPrecisePosition = useCallback((targetAccuracy = 20, maxWaitTime = 5000) => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
+
+      setLoading(true);
+      let watchId;
+      let timer;
+      let lastPosition = null;
+
+      const cleanup = () => {
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+        if (timer) clearTimeout(timer);
+        setLoading(false);
+      };
+
+      // Set a timeout to return whatever we have if we don't hit target accuracy
+      timer = setTimeout(() => {
+        if (lastPosition) {
+          resolve(lastPosition);
+        } else {
+          reject(new Error('Location request timed out'));
+        }
+        cleanup();
+      }, maxWaitTime);
+
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const coords = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            timestamp: position.timestamp
+          };
+          
+          lastPosition = coords;
+          setLocation(coords);
+
+          // If we reach the target accuracy, resolve immediately
+          if (coords.accuracy <= targetAccuracy) {
+            resolve(coords);
+            cleanup();
+          }
+        },
+        (err) => {
+          setError(err.message);
+          reject(err);
+          cleanup();
+        },
+        defaultOptions
+      );
+    });
+  }, [defaultOptions]);
+
   return {
     location,
     error,
     loading,
     getCurrentPosition,
+    getPrecisePosition,
     watchPosition,
     clearWatch,
     reset,
