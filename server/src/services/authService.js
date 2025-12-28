@@ -11,17 +11,18 @@ const otpStore = new Map();
  */
 class AuthService {
   constructor() {
-    const password = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : '';
+    // Robust cleaning: remove all spaces and any accidental commas
+    const password = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/[\s,]/g, '') : '';
     
     this.transporter = nodemailer.createTransport({
-      service: process.env.EMAIL_SERVICE || 'gmail',
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: password,
       },
+      // Higher timeout for cloud environments
+      connectionTimeout: 10000, 
+      greetingTimeout: 10000,
     });
   }
 
