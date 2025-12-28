@@ -27,6 +27,7 @@
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^7.0.12",
     "qrcode": "^1.5.4",
+    "resend": "^6.6.0",
     "uuid": "^11.0.3"
   },
   "devDependencies": {

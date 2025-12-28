@@ -1,29 +1,17 @@
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 // In-memory OTP store (expires after 5 mins)
-// Format: { email: { otp, expiresAt, role } }
 const otpStore = new Map();
 
 /**
  * Auth Service
- * Tracks OTPs and generates JWTs
+ * Tracks OTPs and generates JWTs using Resend for transactional email
  */
 class AuthService {
   constructor() {
-    // Robust cleaning: remove all spaces and any accidental commas
-    const password = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/[\s,]/g, '') : '';
-    
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: password,
-      },
-      // Higher timeout for cloud environments
-      connectionTimeout: 10000, 
-      greetingTimeout: 10000,
-    });
+    // Initialize Resend with API Key
+    this.resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
   }
 
   /**
@@ -35,27 +23,39 @@ class AuthService {
 
     otpStore.set(email, { otp, expiresAt, role });
 
-    // In development, log the OTP to console if email is not configured
-    if (!process.env.EMAIL_USER) {
+    // In development mode (no API key or local), log to console
+    if (!this.resend || process.env.NODE_ENV === 'development') {
       console.log(`🔑 [DEV MODE] OTP for ${email}: ${otp}`);
+      // If we're on Render but forgot the API key, still log it so user can see it in logs
+      if (process.env.RENDER) {
+        console.log(`⚠️ RESEND_API_KEY missing on Render. Verification will only work by checking Render logs.`);
+      }
       return true;
     }
 
     try {
-      await this.transporter.sendMail({
-        from: `"QR Attendance" <${process.env.EMAIL_USER}>`,
+      const { data, error } = await this.resend.emails.send({
+        from: 'Attendance System <onboarding@resend.dev>', // Resend allows this for testing
         to: email,
         subject: 'Your Attendance System OTP',
         html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>Verification Code</h2>
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h2 style="color: #4f46e5;">Verification Code</h2>
             <p>Your OTP for logging into the QR Attendance System is:</p>
-            <h1 style="color: #4f46e5; letter-spacing: 5px;">${otp}</h1>
-            <p>This code will expire in 5 minutes.</p>
-            <p>If you didn't request this, please ignore this email.</p>
+            <h1 style="color: #4f46e5; letter-spacing: 5px; font-size: 32px;">${otp}</h1>
+            <p style="color: #64748b;">This code will expire in 5 minutes.</p>
+            <p style="font-size: 12px; color: #94a3b8; margin-top: 20px;">
+              If you didn't request this, please ignore this email.
+            </p>
           </div>
         `,
       });
+
+      if (error) {
+        console.error('Resend API Error:', error);
+        throw new Error('Failed to send email via Transactional API');
+      }
+
       return true;
     } catch (error) {
       console.error('Email send error:', error);
