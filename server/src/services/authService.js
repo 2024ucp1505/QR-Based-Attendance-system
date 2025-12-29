@@ -24,14 +24,14 @@ class AuthService {
     otpStore.set(email, { otp, expiresAt, role });
 
     // In development mode (no API key or local), log to console
-    if (!this.resend || process.env.NODE_ENV === 'development') {
-      console.log(`🔑 [DEV MODE] OTP for ${email}: ${otp}`);
-      // If we're on Render but forgot the API key, still log it so user can see it in logs
-      if (process.env.RENDER) {
-        console.log(`⚠️ RESEND_API_KEY missing on Render. Verification will only work by checking Render logs.`);
-      }
-      return true;
-    }
+    // if (!this.resend || process.env.NODE_ENV === 'development') {
+    //   console.log(`🔑 [DEV MODE] OTP for ${email}: ${otp}`);
+    //   // If we're on Render but forgot the API key, still log it so user can see it in logs
+    //   if (process.env.RENDER) {
+    //     console.log(`⚠️ RESEND_API_KEY missing on Render. Verification will only work by checking Render logs.`);
+    //   }
+    //   return true;
+    // }
 
     try {
       const { data, error } = await this.resend.emails.send({
