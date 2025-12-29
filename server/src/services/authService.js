@@ -1,17 +1,24 @@
 import jwt from 'jsonwebtoken';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 // In-memory OTP store (expires after 5 mins)
 const otpStore = new Map();
 
 /**
  * Auth Service
- * Tracks OTPs and generates JWTs using Resend for transactional email
+ * Tracks OTPs and generates JWTs using Brevo (Transactional Relay)
  */
 class AuthService {
   constructor() {
-    // Initialize Resend with API Key
-    this.resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+    // Brevo SMTP Relay configuration
+    this.transporter = nodemailer.createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      auth: {
+        user: process.env.BREVO_USER,
+        pass: process.env.BREVO_PASS,
+      },
+    });
   }
 
   /**
@@ -23,19 +30,15 @@ class AuthService {
 
     otpStore.set(email, { otp, expiresAt, role });
 
-    // In development mode (no API key or local), log to console
-    // if (!this.resend || process.env.NODE_ENV === 'development') {
-    //   console.log(`🔑 [DEV MODE] OTP for ${email}: ${otp}`);
-    //   // If we're on Render but forgot the API key, still log it so user can see it in logs
-    //   if (process.env.RENDER) {
-    //     console.log(`⚠️ RESEND_API_KEY missing on Render. Verification will only work by checking Render logs.`);
-    //   }
-    //   return true;
-    // }
+    // Fallback to console log if credentials missing
+    if (!process.env.BREVO_USER || !process.env.BREVO_PASS) {
+      console.log(`🔑 [DEV/LOG MODE] OTP for ${email}: ${otp}`);
+      return true;
+    }
 
     try {
-      const { data, error } = await this.resend.emails.send({
-        from: 'Attendance System <onboarding@resend.dev>', // Resend allows this for testing
+      await this.transporter.sendMail({
+        from: `"Attendance System" <${process.env.BREVO_USER}>`,
         to: email,
         subject: 'Your Attendance System OTP',
         html: `
@@ -50,15 +53,11 @@ class AuthService {
           </div>
         `,
       });
-
-      if (error) {
-        console.error('Resend API Error:', error);
-        throw new Error('Failed to send email via Transactional API');
-      }
-
       return true;
     } catch (error) {
-      console.error('Email send error:', error);
+      console.error('Brevo Send Error:', error);
+      // Fallback: Log to console so it's visible in Render logs even if API fails
+      console.log(`🔑 [FALLBACK] OTP for ${email}: ${otp}`);
       throw new Error('Failed to send OTP email');
     }
   }
