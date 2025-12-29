@@ -49,6 +49,26 @@ const Dashboard = () => {
     setAttendance([]);
   };
 
+  const handleExport = async (sessionId) => {
+    try {
+      // Direct API call to handle blob response properly
+      const response = await exportAttendance(sessionId);
+
+      // Create a blob URL from the response
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attendance_${sessionId}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      console.error('Export failed:', err);
+      // Fallback or error display
+      alert('Failed to export CSV. Please try again.');
+    }
+  };
+
   // Calculate stats
   const totalSessions = sessions.length;
   const activeSessions = sessions.filter(s => s.status === 'active').length;
@@ -164,13 +184,12 @@ const Dashboard = () => {
               >
                 View QR Code
               </Link>
-              <a
-                href={getExportURL(selectedSession.sessionId)}
+              <button
                 className="btn-secondary"
-                download
+                onClick={() => handleExport(selectedSession.sessionId)}
               >
                 📥 Export CSV
-              </a>
+              </button>
             </div>
 
             <div className="details-attendance">
@@ -208,7 +227,7 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-    </div>
+    </div >
   );
 };
 

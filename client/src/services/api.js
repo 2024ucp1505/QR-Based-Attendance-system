@@ -135,10 +135,13 @@ export const checkAttendance = async (sessionId, studentId) => {
 // ==================== EXPORT APIs ====================
 
 /**
- * Export attendance as CSV (returns download URL)
+ * Export attendance as CSV
  */
-export const getExportURL = (sessionId) => {
-  return `${API_BASE_URL}/export-attendance/${sessionId}`;
+export const exportAttendance = async (sessionId) => {
+  const response = await api.get(`/export-attendance/${sessionId}`, {
+    responseType: 'blob'
+  });
+  return response.data;
 };
 
 /**
