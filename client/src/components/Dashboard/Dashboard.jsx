@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllSessions, getAttendance, getExportURL } from '../../services/api';
+import { getAllSessions, getAttendance, exportAttendance } from '../../services/api';
 import { formatDateTime, formatDate } from '../../utils/helpers';
 import Loading from '../common/Loading';
 import './Dashboard.css';

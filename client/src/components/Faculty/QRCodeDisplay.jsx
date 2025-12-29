@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import QRCode from 'react-qr-code';
-import { getSession, closeSession, getAttendance, getExportURL } from '../../services/api';
+import { getSession, closeSession, getAttendance, exportAttendance } from '../../services/api';
 import { formatDateTime, generateSessionLink, copyToClipboard } from '../../utils/helpers';
 import Loading from '../common/Loading';
 import './Faculty.css';
@@ -67,6 +67,23 @@ const QRCodeDisplay = () => {
     await copyToClipboard(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await exportAttendance(sessionId);
+
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attendance_${sessionId}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Failed to export CSV. Please try again.');
+    }
   };
 
   const qrPayload = session ? JSON.stringify({
@@ -195,13 +212,12 @@ const QRCodeDisplay = () => {
           )}
 
           {attendance.length > 0 && (
-            <a
-              href={getExportURL(sessionId)}
+            <button
               className="btn-secondary btn-full mt-2"
-              download
+              onClick={handleExport}
             >
               📥 Export CSV
-            </a>
+            </button>
           )}
         </div>
       </div>
