@@ -17,7 +17,7 @@ A next-generation, secure, and location-aware attendance system designed to elim
 
 ---
 
-## 🛡️ Key Security Features (Why We Win)
+## 🛡️ Key Security Features
 
 This isn't just a QR scanner; it's a **fortress against proxy attendance**.
 
@@ -84,7 +84,7 @@ graph TD
 ### Backend
 - **Node.js + Express**: Robust REST API.
 - **JWT (JSON Web Tokens)**: Stateless, secure authentication.
-- **Resend / Brevo**: Transactional email delivery infrastructure.
+- **Resend**: Transactional email delivery infrastructure.
 - **Google Sheets API**: Using simpler, accessible storage as a database (NoSQL-like usage).
 
 ---
@@ -119,4 +119,4 @@ npm run dev
 ---
 
 ## � License
-MIT License. Built with ❤️ for the C2C Mock Hackathon.
+MIT License. Built with ❤️ for the C2C winter Hackathon.
