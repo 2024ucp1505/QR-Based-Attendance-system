@@ -35,7 +35,7 @@ class AuthService {
 
     try {
       const { data, error } = await this.resend.emails.send({
-        from: 'Attendance System <onboarding@resend.dev>', // Resend allows this for testing
+        from: process.env.EMAIL_FROM || 'Attendance System <onboarding@resend.dev>',
         to: email,
         subject: 'Your Attendance System OTP',
         html: `
