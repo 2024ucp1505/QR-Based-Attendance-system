@@ -1,126 +1,122 @@
-# QR-Based Attendance System - Phase 1
+# 🎓 QR-Based Secure Attendance System
 
-A modern, location-aware attendance system built with React, Node.js/Express, and Google Sheets.
+![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
+![Security](https://img.shields.io/badge/Security-OTP%20%2B%20Device%20Fingerprint-blue)
+![Tech](https://img.shields.io/badge/Stack-MERN%20%2B%20Google%20Sheets-orange)
 
-## 🚀 Features
-
-- **QR Code Generation**: Faculty can create attendance sessions with unique QR codes
-- **Location Validation**: GPS-based verification ensures students are physically present
-- **Duplicate Prevention**: System prevents multiple attendance entries
-- **CSV Export**: Download attendance records for easy record keeping
-- **Real-time Updates**: Attendance list updates automatically
-
-## 🏗️ Architecture
-
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   React App     │────▶│  Express API    │────▶│  Google Sheets  │
-│   (Frontend)    │     │   (Backend)     │     │   (Database)    │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-```
-
-## 📦 Tech Stack
-
-**Frontend:**
-- React 18 + Vite
-- React Router DOM
-- html5-qrcode (Scanner)
-- react-qr-code (Display)
-- Axios
-
-**Backend:**
-- Node.js + Express
-- Google Sheets API
-- QRCode library
-- Geolib (Location validation)
-- json2csv
-
-## 🛠️ Setup
-
-### Prerequisites
-- Node.js 18+
-- Google Cloud account (for Sheets API)
-
-### 1. Clone & Install
-
-```bash
-# Backend
-cd server
-npm install
-cp .env.example .env
-
-# Frontend
-cd ../client
-npm install
-```
-
-### 2. Configure Google Sheets
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project
-3. Enable Google Sheets API
-4. Create a Service Account
-5. Download credentials JSON
-6. Create a Google Spreadsheet with two sheets:
-   - `Sessions` (columns: sessionId, facultyName, subject, latitude, longitude, radius, createdAt, status)
-   - `Attendance` (columns: recordId, sessionId, studentId, studentName, markedAt, latitude, longitude, distance)
-7. Share the spreadsheet with your service account email
-
-### 3. Environment Variables
-
-Edit `server/.env`:
-
-```env
-PORT=5000
-GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@project.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
-DEFAULT_RADIUS_METERS=50
-CLIENT_URL=http://localhost:5173
-```
-
-### 4. Run Development Servers
-
-```bash
-# Terminal 1 - Backend
-cd server
-npm run dev
-
-# Terminal 2 - Frontend
-cd client
-npm run dev
-```
-
-- Frontend: http://localhost:5173
-- Backend: http://localhost:5000
-- API Health: http://localhost:5000/api/health
-
-## 📡 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/create-session` | Create attendance session |
-| GET | `/api/session/:id` | Get session details |
-| GET | `/api/sessions` | Get all sessions |
-| PATCH | `/api/session/:id/close` | Close a session |
-| POST | `/api/mark-attendance` | Mark student attendance |
-| GET | `/api/attendance/:sessionId` | Get attendance list |
-| GET | `/api/export-attendance/:sessionId` | Download CSV |
-
-## 🔐 Phase 2 (Coming Soon)
-
-- JWT Authentication
-- OTP Verification for students
-- Role-based access (Admin, Faculty, Student)
-- MongoDB integration
-- Enrollment system
-- Analytics dashboard
-
-## 📄 License
-
-MIT
+A next-generation, secure, and location-aware attendance system designed to eliminate proxy attendance through multi-layer verification. Built for educational institutions with strict identity and location enforcement.
 
 ---
 
-Built with ❤️ for C2C Project
+## 🌐 Live Deployment
 
+| Component | Status | URL |
+|-----------|--------|-----|
+| **Frontend (App)** | 🟢 Online | **[Launch Application](https://qr-based-attendance-system-hazel.vercel.app)** |
+| **Backend (API)** | 🟢 Online | [Check Health Status](https://qr-based-attendance-system-jw2v.onrender.com/api/health) |
+
+---
+
+## 🛡️ Key Security Features (Why We Win)
+
+This isn't just a QR scanner; it's a **fortress against proxy attendance**.
+
+### 1. 🔐 OTP-Based Identity Verification
+- **Faculty**: Authenticated via email OTP to create and manage sessions. Only the creator can close or export their sessions.
+- **Students**: Must verify their **Institutional Email (@mnit.ac.in)** via OTP before they can access the scanner. No external emails allowed.
+
+### 2. � Single Device Lock (Anti-Proxy)
+- **The "One Device, One Student" Rule**: We use browser fingerprinting to lock a student's identity to their physical device.
+- **Duplicate Prevention**: If a student tries to mark attendance for a friend using their own phone (logging out and logging in as the friend), the system **detects the device ID again and BLOCKS the attempt**.
+
+### 3. 📍 Geofencing & GPS Validation
+- **Location Check**: Students typically must be within **50 meters** (configurable of the classroom to mark attendance.
+- **Haversine Formula**: Precise distance calculation between the faculty's device and the student's device.
+
+### 4. 🚫 Session Ownership & Integrity
+- **Role-Based Access**: Faculty dashboard is completely separated from Student view.
+- **Secure Exports**: Only the faculty member who *created* the session can download the CSV report.
+
+---
+
+## 🔄 System Architecture & Flow
+
+### User Journey Flow
+
+```mermaid
+graph TD
+    A[User Visits App] --> B{Role Selection}
+    
+    %% Faculty Flow
+    B -->|Faculty| C[Login via Email]
+    C --> D[Receive 6-Digit OTP]
+    D --> E[Verify & Access Dashboard]
+    E --> F[Create Session & Generate QR]
+    F --> G[Monitor Real-time Attendance]
+    G --> H[Export CSV / Close Session]
+
+    %% Student Flow
+    B -->|Student| I[Login via Institutional Email]
+    I --> J[Receive OTP on @mnit.ac.in]
+    J --> K[Verify & Unlock Scanner]
+    K --> L[Scan Classroom QR]
+    L --> M{Security Checks}
+    
+    %% Security Validation
+    M -->|Check 1| N[Validate GPS Location]
+    M -->|Check 2| O[Check Device Fingerprint]
+    M -->|Check 3| P[Check Previous Records]
+    
+    %% Result
+    N & O & P -->|All Pass| Q[✅ Attendance Marked]
+    N & O & P -->|Any Fail| R[❌ Request Denied]
+```
+
+---
+
+## 📦 Tech Stack
+
+### Frontend
+- **React 18 + Vite**: Blazing fast UI.
+- **HTML5-QRCode**: Reliable in-browser camera access.
+- **CSS3 Variables**: Modern, responsive design without heavy frameworks.
+
+### Backend
+- **Node.js + Express**: Robust REST API.
+- **JWT (JSON Web Tokens)**: Stateless, secure authentication.
+- **Resend / Brevo**: Transactional email delivery infrastructure.
+- **Google Sheets API**: Using simpler, accessible storage as a database (NoSQL-like usage).
+
+---
+
+## 🛠️ Local Setup Guide
+
+If you want to run this locally instead of using the live links:
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/2024ucp1505/QR-Based-Attendance-system.git
+cd QR-Based-Attendance-system
+```
+
+### 2. Backend Setup
+```bash
+cd server
+npm install
+
+# Create .env file with your credentials
+# (See .env.example for required keys)
+npm run dev
+```
+
+### 3. Frontend Setup
+```bash
+cd client
+npm install
+npm run dev
+```
+
+---
+
+## � License
+MIT License. Built with ❤️ for the C2C Mock Hackathon.
