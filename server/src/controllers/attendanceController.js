@@ -4,13 +4,17 @@ import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { isValidCoordinate } from '../utils/locationValidator.js';
 
 /**
- * Mark attendance for a student
+ * Mark attendance for a student — queued path
  * POST /api/mark-attendance
+ *
+ * Returns HTTP 202 Accepted immediately after validation passes and the
+ * record is enqueued.  The actual write to Google Sheets happens during
+ * the next queue flush (every 10 s, max 60 writes/min).
  */
 export const markAttendance = asyncHandler(async (req, res) => {
   const { sessionId, studentId, studentName, latitude, longitude, deviceId } = req.body;
 
-  // Validation
+  // ── Input validation ──────────────────────────────────────────────
   if (!sessionId) {
     throw new AppError('Session ID is required', 400);
   }
@@ -31,33 +35,43 @@ export const markAttendance = asyncHandler(async (req, res) => {
     throw new AppError('Invalid coordinates provided', 400);
   }
 
+  // ── Business validation + enqueue ────────────────────────────────
   try {
-    const result = await attendanceService.markAttendance({
+    const result = await attendanceService.queueAttendance({
       sessionId,
       studentId,
       studentName,
       latitude,
       longitude,
       studentEmail: req.user.email,
-      deviceId
+      deviceId,
     });
 
-    res.status(201).json({
-      success: true,
-      message: result.message,
-      data: result.record
+    // 202 Accepted: request is valid and queued; not yet written to DB
+    res.status(202).json({
+      success:          true,
+      queued:           true,
+      message:          result.message,
+      position:         result.position,
+      estimatedWaitMs:  result.estimatedWaitMs,
+      data:             result.record,
     });
   } catch (error) {
-    // Handle specific business errors
-    if (error.message.includes('not found') || 
-        error.message.includes('not active') ||
-        error.message.includes('already marked') ||
-        error.message.includes('away from')) {
+    // Translate known business errors to 400 Bad Request
+    if (
+      error.message.includes('not found')     ||
+      error.message.includes('not active')    ||
+      error.message.includes('already marked')||
+      error.message.includes('away from')     ||
+      error.message.includes('bounding box')  ||
+      error.message.includes('outside the allowed area')
+    ) {
       throw new AppError(error.message, 400);
     }
     throw error;
   }
 });
+
 
 /**
  * Get attendance for a session
