@@ -56,8 +56,10 @@ coverage/
 .cache/
 .temp/
 .tmp/
+linkedin.pdf
+IMPLEMENTATION_PLAN.md
 
-# Google credentials (NEVER commit these!)
+# Google credentials
 *credentials*.json
 *service-account*.json
 
